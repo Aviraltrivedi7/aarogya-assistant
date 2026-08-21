@@ -152,3 +152,16 @@
 ## agent_communication
 - agent: testing
 - message: Playwright verification passed all core desktop and emergency/chat flows with no console errors. Mobile sidebar opened; close assertion was inconclusive because the test locator matched ambiguously/state visibility after closing, while screenshot showed the dashboard with sidebar closed. Please consider adding data-testid attributes for robust future testing.
+
+## UI Enhancement Run 2026-08-21
+- Added a more polished global visual finish: Inter-style system typography, soft off-white canvas, selection color, touch-tap polish, active press feedback, and refined scrollbars in `/app/app/globals.css`.
+- needs_retesting: true
+
+## UI Regression Run 2026-08-21 (post globals.css styling enhancement)
+- Frontend task: Premium AarogyaGPT dashboard UI — working: true; Playwright verified desktop and mobile rendering.
+- Confirmed: dashboard cards and AarogyaGPT disclaimer visible; EN/HI toggle; Start a health check opens AI Assistant; chat send adds follow-up messages; emergency modal opens with exactly one visible tel:112 link; mobile sidebar opens and closes; no console/runtime errors or page error elements observed.
+- Backend/API intentionally not tested per request.
+
+## agent_communication
+- agent: testing
+- message: Post-styling regression passed all requested frontend flows on desktop (1920x1080) and mobile (390x844). No confirmed failures; main agent can summarize and finish.
