@@ -165,3 +165,17 @@
 ## agent_communication
 - agent: testing
 - message: Post-styling regression passed all requested frontend flows on desktop (1920x1080) and mobile (390x844). No confirmed failures; main agent can summarize and finish.
+
+## UI Premium Rewrite Run 2026-08-21
+- Reworked `/app/app/page.js` into a more premium dashboard composition with stronger hero hierarchy, richer status chips, refined card shadows, better spacing, and improved responsive navigation.
+- needs_retesting: true
+
+
+## UI Regression Run 2026-08-21 (latest premium rewrite)
+- Frontend task: Premium AarogyaGPT dashboard UI — working: true; confirmed desktop and mobile rendering, hero/major cards, medical disclaimer, EN/HI toggle, Start a health check and Check symptoms assistant entry, chat follow-up bubbles, Emergency help and Emergency info modal flows, exactly one visible tel:112 link, and no console/runtime/page errors.
+- Mobile sidebar open and visual close behavior passed by screenshot/viewport state. Initial close assertion was inconclusive because Workspace remains mounted in DOM while the sidebar transitions offscreen; no confirmed functional failure.
+- Backend/API intentionally not tested per request.
+
+## agent_communication
+- agent: testing
+- message: Latest premium rewrite regression passed all requested frontend flows at desktop (1920x1080) and mobile (390x844). No confirmed failures; mobile close visually returned to dashboard, though DOM visibility assertion is unsuitable for the transformed offscreen sidebar.
