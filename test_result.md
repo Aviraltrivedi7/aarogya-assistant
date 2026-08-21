@@ -170,6 +170,10 @@
 - Reworked `/app/app/page.js` into a more premium dashboard composition with stronger hero hierarchy, richer status chips, refined card shadows, better spacing, and improved responsive navigation.
 - needs_retesting: true
 
+## UI Health Command Center Rebuild Run 2026-08-21
+- Rebuilt `/app/app/page.js` with a deeper navy navigation rail, upgraded care hero, health command-center hierarchy, richer action cards, and preserved local chat/emergency interactions.
+- needs_retesting: true
+
 
 ## UI Regression Run 2026-08-21 (latest premium rewrite)
 - Frontend task: Premium AarogyaGPT dashboard UI — working: true; confirmed desktop and mobile rendering, hero/major cards, medical disclaimer, EN/HI toggle, Start a health check and Check symptoms assistant entry, chat follow-up bubbles, Emergency help and Emergency info modal flows, exactly one visible tel:112 link, and no console/runtime/page errors.
@@ -179,3 +183,13 @@
 ## agent_communication
 - agent: testing
 - message: Latest premium rewrite regression passed all requested frontend flows at desktop (1920x1080) and mobile (390x844). No confirmed failures; mobile close visually returned to dashboard, though DOM visibility assertion is unsuitable for the transformed offscreen sidebar.
+
+
+## UI Regression Run 2026-08-21 (latest health-command-center rebuild)
+- Frontend task: Premium AarogyaGPT dashboard UI — working: true; confirmed desktop rendering (navy sidebar, hero, action cards, health history, reminders, disclaimer), EN/HI toggle, Start a health check and Check symptoms assistant entry, text chat follow-up bubbles, Emergency help and Emergency info modal, exactly one visible tel:112 link, and mobile sidebar open/close.
+- No confirmed console/runtime/page errors in successful desktop/mobile runs. One intermediate automation timeout was caused by the test attempting to click the underlying Emergency info card while the modal overlay was still open; not an app failure.
+- Backend/API intentionally not tested per request.
+
+## agent_communication
+- agent: testing
+- message: Latest rebuild regression passed requested frontend flows on desktop and mobile. No confirmed failures; intermediate test error was selector flow against an open modal overlay, not product behavior. Main agent can summarize and finish.
