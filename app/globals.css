@@ -1,0 +1,206 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── AarogyaGPT design language ──────────────────────────────────
+   Fonts: Baloo 2 (display) + Mukta (body) — both from Ek Type, the
+   Indian foundry that designed them for Devanagari + Latin together,
+   so Hindi renders with the same care as English.
+   Palette: ivory paper, deep forest green, marigold, ink. */
+:root {
+    --font-display: 'Baloo 2', 'Mukta', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-body: 'Mukta', 'Baloo 2', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --ink: #26251c;
+    --leaf: #1d6b48;
+    --marigold: #eda33c;
+}
+
+body {
+    margin: 0;
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    /* Ivory paper with a faint hand-drawn dot grid — feels like a
+       printed wellness journal, not a glassy SaaS dashboard */
+    background-color: #f5f0e3;
+    background-image: radial-gradient(rgba(38, 37, 28, 0.055) 1px, transparent 1.2px);
+    background-size: 22px 22px;
+    background-attachment: fixed;
+}
+
+h1, h2, h3, .font-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+}
+
+/* Baloo 2 sits tall — keep Devanagari headline ascenders comfortable */
+[lang="hi"] h1, [lang="hi"] h2, [lang="hi"] h3, [lang="hi"] .font-display {
+    line-height: 1.25;
+}
+
+::selection {
+    background: #e9d9ae;
+    color: #3d2f0e;
+}
+
+button, a, input {
+    -webkit-tap-highlight-color: transparent;
+}
+
+button:active {
+    transform: translateY(1px);
+}
+
+/* ── Accessibility: visible keyboard focus (WCAG 2.4.7) ───────── */
+:focus-visible {
+    outline: 2px solid #b8974f;
+    outline-offset: 2px;
+    border-radius: 6px;
+}
+
+/* ── Accessibility: respect reduced-motion users (WCAG 2.3.3) ─── */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ── Motion vocabulary (short + subtle; disabled above for RM) ── */
+@keyframes fade-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes pop-in {
+    0% { opacity: 0; transform: scale(0.96) translateY(8px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.anim-fade-up { animation: fade-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.anim-fade-in { animation: fade-in 0.3s ease-out both; }
+.anim-pop-in { animation: pop-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* Subtle warm shimmer for loading/empty states */
+.shimmer {
+    background: linear-gradient(90deg, #efeadd 25%, #e4dcc8 50%, #efeadd 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+}
+
+/* Warm scrollbar to match the ivory paper */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: #c9bfa4;
+    background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a89d7f;
+    background-clip: padding-box;
+}
+
+code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+}
+
+@layer base {
+  :root {
+        --background: 45 33% 95%;
+        --foreground: 45 16% 13%;
+        --card: 40 33% 98%;
+        --card-foreground: 45 16% 13%;
+        --popover: 40 33% 98%;
+        --popover-foreground: 45 16% 13%;
+        --primary: 152 38% 22%;
+        --primary-foreground: 45 40% 95%;
+        --secondary: 45 25% 92%;
+        --secondary-foreground: 45 16% 13%;
+        --muted: 45 25% 92%;
+        --muted-foreground: 45 10% 40%;
+        --accent: 80 25% 90%;
+        --accent-foreground: 45 16% 13%;
+        --destructive: 0 72% 42%;
+        --destructive-foreground: 45 40% 95%;
+        --border: 43 22% 85%;
+        --input: 43 22% 85%;
+        --ring: 152 38% 26%;
+        --chart-1: 152 45% 34%;
+        --chart-2: 36 80% 58%;
+        --chart-3: 20 48% 45%;
+        --chart-4: 192 40% 30%;
+        --chart-5: 8 55% 42%;
+        --radius: 0.5rem;
+        --sidebar-background: 152 38% 12%;
+        --sidebar-foreground: 100 12% 88%;
+        --sidebar-primary: 36 80% 58%;
+        --sidebar-primary-foreground: 45 30% 10%;
+        --sidebar-accent: 152 20% 18%;
+        --sidebar-accent-foreground: 100 12% 88%;
+        --sidebar-border: 152 20% 20%;
+        --sidebar-ring: 152 38% 30%;
+    }
+  .dark {
+        --background: 152 38% 10%;
+        --foreground: 45 40% 95%;
+        --card: 152 38% 12%;
+        --card-foreground: 45 40% 95%;
+        --popover: 152 38% 12%;
+        --popover-foreground: 45 40% 95%;
+        --primary: 45 40% 95%;
+        --primary-foreground: 45 16% 13%;
+        --secondary: 152 20% 18%;
+        --secondary-foreground: 45 40% 95%;
+        --muted: 152 20% 18%;
+        --muted-foreground: 80 10% 72%;
+        --accent: 152 20% 18%;
+        --accent-foreground: 45 40% 95%;
+        --destructive: 0 62.8% 30.6%;
+        --destructive-foreground: 45 40% 95%;
+        --border: 152 20% 20%;
+        --input: 152 20% 20%;
+        --ring: 152 30% 60%;
+        --chart-1: 152 45% 45%;
+        --chart-2: 36 80% 60%;
+        --chart-3: 20 48% 55%;
+        --chart-4: 192 40% 50%;
+        --chart-5: 8 55% 55%;
+        --sidebar-background: 152 38% 8%;
+        --sidebar-foreground: 100 12% 88%;
+        --sidebar-primary: 36 80% 58%;
+        --sidebar-primary-foreground: 45 30% 10%;
+        --sidebar-accent: 152 20% 14%;
+        --sidebar-accent-foreground: 100 12% 88%;
+        --sidebar-border: 152 20% 16%;
+        --sidebar-ring: 152 30% 60%;
+    }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    }
+  body {
+    @apply bg-background text-foreground;
+    }
+}
