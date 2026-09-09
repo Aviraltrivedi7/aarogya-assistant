@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Brain, Check, Download, Pencil, PhoneCall, ShieldCheck, Trash2, X } from 'lucide-react'
+import { Brain, Check, Download, HeartPulse, Pencil, PhoneCall, Printer, ShieldCheck, Trash2, X } from 'lucide-react'
 import { toast } from 'sonner'
 
 import * as sync from '@/lib/sync'
@@ -84,6 +84,66 @@ export function ProfileSection({ t, lang, profile, onSaved, session, onHistoryCl
   }
 
   const set = (key) => (e) => setDraft((d) => ({ ...d, [key]: e.target.value }))
+
+  // ── ICE emergency card popup ────────────────────────────────────
+  // A doctor-responder view of the profile's critical fields, printed
+  // via a popup (same escape-and-print pattern as the History report).
+  // Every value is escapeHtml'd; allergies get the loudest styling —
+  // that is the line a responder scans first.
+  const openIceCard = () => {
+    const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
+    const contact = profile.emergencyContact || ''
+    const phone = (contact.match(/\+?\d[\d\s-]{7,15}/) || [''])[0].replace(/[\s-]/g, '')
+    const win = window.open('', '_blank', 'width=680,height=880')
+    if (!win) {
+      toast.error(lang === 'hi' ? 'पॉपअप ब्लॉक है — प्रिंट कार्ड के लिए पॉपअप की अनुमति दें।' : 'Popup blocked — allow popups to print the card.')
+      return
+    }
+    const row = (label, value, opts = {}) => `
+      <div style="${opts.strong ? 'background:#fdeaea;' : ''}border:1px solid #e7e0d4;border-radius:10px;padding:10px 14px;">
+        <div style="font-size:9px;letter-spacing:.12em;font-weight:800;color:#8a6215;text-transform:uppercase;">${esc(label)}</div>
+        <div style="margin-top:3px;font-size:14px;font-weight:700;color:${opts.strong ? '#8f3232' : '#26251c'};word-wrap:break-word;">${esc(value || t('iceNone'))}</div>
+      </div>`
+    win.document.write(`<!DOCTYPE html><html lang="${lang}"><head><meta charset="utf-8"><title>ICE — ${esc(profile.name || 'AarogyaGPT')}</title>
+      <style>
+        *{box-sizing:border-box}
+        body{margin:0;font-family:'Mukta',system-ui,sans-serif;background:#f5f0e3;padding:24px;color:#26251c}
+        .card{max-width:640px;margin:0 auto;background:#fffdf7;border:3px solid #0f241a;border-radius:22px;overflow:hidden;box-shadow:6px 6px 0 #0f241a}
+        .head{background:#0f241a;color:#f5f0e3;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+        .head h1{margin:0;font-size:17px;letter-spacing:.14em;font-weight:800}
+        .head .mark{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;color:#f2c063}
+        .body{padding:20px 24px}
+        .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+        .grid .wide{grid-column:1 / -1}
+        .call{margin-top:14px;display:flex;align-items:center;justify-content:space-between;background:#8f3232;color:#fff;border-radius:12px;padding:12px 16px;text-decoration:none;font-weight:800;font-size:15px}
+        .foot{padding:12px 24px 18px;font-size:10px;color:#5f5544;text-align:center}
+        @media print{body{background:#fff;padding:0}.card{box-shadow:none}}
+      </style></head><body>
+      <div class="card">
+        <div class="head">
+          <h1>${esc(t('iceCardTitle'))}</h1>
+          <span class="mark">✚ AarogyaGPT</span>
+        </div>
+        <div class="body">
+          <div class="grid">
+            ${row(t('iceName'), profile.name)}
+            ${row(t('iceAge'), profile.age ? `${profile.age} ${t('years')}` : '')}
+            ${row(t('iceBlood'), profile.bloodGroup, { strong: true })}
+            ${row(t('iceConditions'), profile.conditions)}
+          </div>
+          <div class="grid" style="margin-top:10px;grid-template-columns:1fr;">
+            ${row(t('iceAllergies'), profile.allergies, { strong: true })}
+            ${row(t('iceMeds'), profile.medications)}
+            ${row(t('iceContact'), contact)}
+          </div>
+          ${phone ? `<a class="call" href="tel:${esc(phone)}">📞 ${esc(t('iceCall'))}: ${esc(contact)}</a>` : ''}
+        </div>
+        <div class="foot">${esc(t('iceNote'))}</div>
+      </div>
+      <script>window.onload = () => setTimeout(() => window.print(), 300)</script>
+      </body></html>`)
+    win.document.close()
+  }
 
   return (
     <div data-testid="section-profile" className="mx-auto max-w-2xl">
@@ -198,6 +258,29 @@ export function ProfileSection({ t, lang, profile, onSaved, session, onHistoryCl
           </div>
         </div>
       )}
+
+      {/* ── ICE emergency card (print for wallet/phone case) ── */}
+      <section
+        aria-labelledby="ice-h"
+        className="mt-6 rounded-3xl border border-stone-200/80 bg-[#faf6ec] p-6 shadow-[0_7px_24px_-18px_rgba(15,23,42,.4)]"
+        data-testid="ice-card"
+      >
+        <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+          <div className="flex items-start gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-red-600">
+              <HeartPulse size={19} aria-hidden="true" />
+            </span>
+            <div>
+              <h2 id="ice-h" className="text-sm font-extrabold text-stone-900">{t('iceTitle')}</h2>
+              <p className="mt-1 max-w-md text-[12px] leading-5 text-stone-600">{t('iceSub')}</p>
+            </div>
+          </div>
+          <button onClick={openIceCard} data-testid="ice-open" className="flex min-h-10 shrink-0 items-center gap-2 rounded-xl border border-stone-200 bg-[#fffdf7] px-4 text-xs font-bold text-stone-700 hover:border-[#b8974f]">
+            <Printer size={14} aria-hidden="true" />
+            {t('iceOpen')}
+          </button>
+        </div>
+      </section>
 
       {/* ── Health memory (consent-gated AI context) ── */}
       <section

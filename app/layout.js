@@ -11,6 +11,8 @@ import '@fontsource/mukta/500.css'
 import '@fontsource/mukta/600.css'
 import '@fontsource/mukta/700.css'
 
+import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister'
+
 export const metadata = {
   title: {
     default: 'AarogyaGPT — Your AI Health Companion',
@@ -40,7 +42,10 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        {children}
+        <ServiceWorkerRegister />
+      </body>
     </html>
   )
 }

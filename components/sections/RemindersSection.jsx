@@ -84,6 +84,8 @@ export function RemindersSection({ t, lang, reminders, onChange }) {
     toast.success(t('reminderSnoozed'))
   }
 
+  // Toggles flow through the sync layer's doneOn-day logic (undo clears
+  // the marker server-side too) and re-render from the returned list.
   const toggle = (id) => onChange(sync.toggleReminder(id))
   const remove = (id) => {
     if (editing === id) resetForm()

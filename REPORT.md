@@ -729,3 +729,20 @@ User: "bhai isko aur tagda bna bhai har akk chij aur tagdi kr". The previous rou
 ### 20.1 Sticky Sidebar + Header — 2026-09-03
 
 User: "left side wala sidebar fix kr right side vale ke sath move na ho" — the desktop sidebar scrolled away with the content. Fix: `lg:sticky lg:top-0 lg:h-screen` on the aside (flex child, no layout jump), the nav list gets its own `overflow-y-auto` for short viewports (brand header + privacy card stay pinned), and the header is now `sticky top-0` over its existing backdrop blur. Mobile drawer untouched (still `fixed`). Also caught the last green token from the de-greening pass: `:focus-visible` outline → gold. Verified with bounding-box assertions (sidebar rect identical after a 1200px scroll), a DOM-truth mobile drawer check (the first assertion used `isVisible()`, which stays true under transforms — the real signal is the bounding box), the full 131/131 suite with 0 violations / 0 console errors, a green production build, and screenshots `sticky-1-scrolled.png` / `sticky-2-mobile-drawer.png`.
+
+## 21. Phase 14 — Truth, Offline & the ICE Card — 2026-09-09
+
+User: "bhai to isko aur tagda kr". Three real gaps closed:
+
+**Daily reminder reset** — the biggest honesty bug left: a daily reminder marked done stayed done forever (missing from tomorrow's plan, notifications never re-fire). Introduces `doneOn` (local date key): `rolloverDaily()` in lib/health.js runs on loadAll, returning stale-day completions to pending; the storage toggle writes today's key on done, clears it on undo, and a tap on a yesterday-done row marks TODAY done (not an accidental undo); the sync layer PATCHes `doneOn: null` on undo so no server row ever carries a stale marker; zod schemas validate the date shape. Server rows stay untouched — each device rolls over in its own timezone morning. Legacy boolean-only rows behave exactly as before.
+
+**Offline PWA** — `public/sw.js`: navigations network-first with cached-shell fallback, static assets cache-first, `/api/*` network-first with writes never served from cache; offline API misses return `503 {dbDown:true}` — the exact signal the app's existing local-mode fallback understands. Registration is production-only (dev HMR vs precache is a stale-cache trap). PNG icons (192/512 + maskable) generated from the SVG logo make the manifest Android-installable.
+
+**ICE emergency card** — one-tap print popup from the profile: wallet-size card with ink header, blood group and ALLERGIES as the loudest lines (what a responder scans first), conditions/meds/emergency contact, a `tel:` call row, auto-print, all values escaped, bilingual.
+
+### Verification
+
+- `scripts/unit-phase14.mjs` — **17/17** (rollover paths, toggle day-key paths with a localStorage shim, plan integration, i18n parity).
+- Suite: **138/138 flows, 19 axe states, 0 violations, 0 console errors** (7 new: DB day-marker sync, yesterday-done reloads pending, undo leaves no stale marker, ICE popup ×4).
+- **Offline E2E against the production build with a real service worker**: SW controls the page, an offline reload serves the app shell, offline triage answers "bukhar hai" with the local engine + an honest "Offline" flag, reminders render; the only console entries are the expected `ERR_INTERNET_DISCONNECTED` resource notes.
+- Build green; dev restarted on 3311. Screenshots `p14-1…4`.

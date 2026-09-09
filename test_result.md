@@ -408,3 +408,24 @@
   - Full suite re-run: **131/131 flows, 19 axe states, 0 violations, 0 console errors**; build green; dev restarted.
 - screenshots: sticky-1-scrolled.png (desktop, 1200px scrolled — sidebar pinned), sticky-2-mobile-drawer.png.
 - needs_retesting: false
+
+## GitHub Push 2026-09-04 (user: "sab kuch iss github repo me push kr do")
+- repo: https://github.com/Aviraltrivedi7/aarogya-assistant (remote pe pehle se 4 frontend-prototype commits the — d2c9bfe→dcaf231, frontend-only demo phase).
+- flow: git init → 180 files staged → secret gates (3-layer: `.env` .gitignore-covered; key VALUE ka grep working tree + STAGED BLOBS (`git grep --cached`) dono pe clean; yarn.lock ka `sk-` hit = "queue-microta**sk-**1.2.3.tgz" URL coincidence, benign) → commit 299683f → **`git merge origin/main -s ours --allow-unrelated-histories`** (merge commit b0c5621) — purani prototype history ancestry mein zinda, tree hamara verified full-stack build (remote ke purane README jo "frontend-only interactions hain" kehta tha, ab updated README se replace) → push `dcaf231..b0c5621`.
+- pushed: poora app (app/, components/, lib/, hooks/, scripts/, tests/, public/), suite (axe-scan.cjs), unit tests (scripts/unit-phase13.mjs), docs (README/REPORT 727 lines/test_result 410 lines), 30 screenshots (screenshots/ + root PNGs), memory/.gitkeep, .env.example (placeholders only), package-lock.json.
+- NOT pushed (by design): `.env` (OpenAI key), node_modules, .next, .emergent/, axe-report.json (regenerated). Remote-tree verification: `.env` GitHub pe NAHI hai.
+- needs_retesting: false
+
+## Phase 14 Run 2026-09-09 (user: "bhai to isko aur tagda kr") — Truth, Offline & ICE
+- theme: teen REAL gaps band kiye — daily reminders ka roz ka jhooth, internet dependence, aur emergency mein information ki khoj.
+- features:
+  - **Daily reminder reset (sach ka fix)**: "Take medicine (daily)" ek baar done → pehle HAMESHA ke liye done reh jata tha (kal ka plan mein nahi aata, notification kabhi nahi bajta). Ab har reminder par `doneOn` (local date) — `rolloverDaily()` loadAll par purane din ka done wapas PENDING karta hai; storage-toggle ke teeno paths test kiye (ON aaj likhta hai, OFF marker clear karta hai, kal-done par aaj tap = aaj done, undo nahi); undo server par `doneOn: null` PATCH karta hai (stale marker kabhi nahi baithega); PATCH/POST schema doneOn regex-validated; legacy rows (bina doneOn) bilkul pehle jaise honest. Server row untouched rehta hai — har device apni subah rollover karta hai (timezone-safe).
+  - **PWA offline (installable)**: public/sw.js service worker — navigations network-first + cached-shell fallback; static cache-first; /api/* network-first, writes kabhi cache se nahi; offline par 503 {dbDown:true} JSON — wahi path jise app pehle se jaanta hai (local mode). Register sirf PRODUCTION mein (dev mein HMR vs stale-precache known trap). PNG icons 192/512 + maskable (Android install) — SVG-only manifest reject ho sakta tha.
+  - **ICE emergency card**: Profile mein "View / print card" → popup wallet-size card — ink header, blood group + ALLERGIES sabse loud (responder pehli line yahi scan karta hai), conditions/meds/contact, tel: call row, auto-print, har value escapeHtml'd. Hindi/English dono.
+- verification:
+  - **unit-phase14.mjs 17/17**: todayKey format/padding, rollover (yesterday→pending, today stays, once/legacy keep, weekdays/weekends, no-mutation), isDoneToday, plan integration, storage-toggle 3 paths (localStorage shim), ICE i18n parity EN+HI.
+  - **Suite 138/138 flows, 19 axe states, 0 violations, 0 console errors** — 7 naye flows (doneOn DB sync, yesterday-done daily reload-pending, undo-no-stale-marker, ICE popup 4). Suite traps: esc fn syntax typo pehla run 500s; rem-toggle testid list-swap pe timeout (undo click purane testid pe); PATCH mirror fire-and-forget → DB poll.
+  - **Offline E2E (prod build, real SW)**: SW controls page ✓, offline RELOAD app shell serve ✓, offline triage "bukhar hai" → Fever reply + "Offline" honest flag ✓, offline reminders section ✓. Console: sirf 2 expected ERR_INTERNET_DISCONNECTED resource notes (humne offline kiya tha).
+  - build green, dev restarted on 3311, prod proof server 3399 pe chala ke band kiya.
+- screenshots: p14-1-offline-triage (offline mein reply ke saath), p14-2-ice-card (print card), p14-3-reminders-templates, p14-4-home.
+- needs_retesting: false

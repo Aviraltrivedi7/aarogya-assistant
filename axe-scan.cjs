@@ -443,6 +443,67 @@ async function main() {
     return list[0]?.done === true
   })
   flows.push(['backend: toggle synced (done=true in DB)', remDoneOnServer && remAfterToggle >= 1])
+  // Phase 14: done carries the day marker — doneOn === today in Mongo.
+  const doneOnOnServer = await page.evaluate(async () => {
+    const uid = window.localStorage.getItem('aarogya.uid.v1')
+    const res = await fetch('/api/reminders', { headers: { 'X-User-Id': uid } })
+    const list = await res.json()
+    const d = new Date()
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    return list[0]?.doneOn === key
+  })
+  flows.push(['backend: doneOn day marker synced to DB', doneOnOnServer])
+  // 7c-2. Daily-reset rollover E2E: force the stored reminder's doneOn to
+  // yesterday (local + server), reload → loadAll merges server-first, then
+  // rolloverDaily must bring it back PENDING — the honest new-day plan.
+  await page.evaluate(() => {
+    const d = new Date(); d.setDate(d.getDate() - 1)
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    const raw = localStorage.getItem('aarogya.reminders.v1')
+    const list = raw ? JSON.parse(raw) : []
+    localStorage.setItem('aarogya.reminders.v1', JSON.stringify(list.map((r) => (r.when === 'daily' ? { ...r, doneOn: key } : r))))
+  })
+  await page.evaluate(async () => {
+    const uid = window.localStorage.getItem('aarogya.uid.v1')
+    const d = new Date(); d.setDate(d.getDate() - 1)
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    const res = await fetch('/api/reminders', { headers: { 'X-User-Id': uid } })
+    const list = await res.json()
+    await Promise.all(list.filter((r) => r.when === 'daily').map((r) =>
+      fetch(`/api/reminders/${encodeURIComponent(r.id)}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-User-Id': uid }, body: JSON.stringify({ doneOn: key }) })
+    ))
+  })
+  await page.reload({ waitUntil: 'networkidle' })
+  await page.waitForFunction(() => !!document.querySelector('[data-testid="main-content"]') || !!document.querySelector('[data-testid="auth-guest"]'), { timeout: 30000 })
+  if (await page.getByTestId('auth-guest').isVisible().catch(() => false)) await page.getByTestId('auth-guest').click()
+  await page.waitForTimeout(2500) // loadAll merge + rollover
+  await page.getByTestId('nav-reminders').click()
+  await page.waitForTimeout(800)
+  // The daily item must sit PENDING again; the one-shot 'today' item
+  // legitimately stays in done — assert the daily row specifically.
+  const pendText = (await page.locator('[data-testid="rem-item"]').allTextContents().catch(() => [])).join(' | ')
+  const doneText = (await page.locator('[data-testid="rem-item-done"]').allTextContents().catch(() => [])).join(' | ')
+  flows.push(['daily-reset: yesterday-done daily is pending again', pendText.includes('Drink water') && !doneText.includes('Drink water'), `pending=[${pendText.slice(0, 80)}] done=[${doneText.slice(0, 80)}]`])
+  // Undo path clears the marker server-side (done:false + doneOn null).
+  // Target the DAILY row itself ('Drink water') — the list's first row is
+  // the 'today' item, and the toggle testid swaps across lists anyway.
+  const waterRow = (list) => page.locator(`[data-testid="rem-item${list === 'pending' ? '' : '-done'}"]`, { hasText: 'Drink water' })
+  await waterRow('pending').locator('button').first().click()
+  await page.waitForTimeout(600)
+  await waterRow('done').locator('button').first().click()
+  // The PATCH mirror is fire-and-forget — poll Mongo until it lands.
+  let undoClean = false
+  for (let i = 0; i < 10 && !undoClean; i++) {
+    undoClean = await page.evaluate(async () => {
+      const uid = window.localStorage.getItem('aarogya.uid.v1')
+      const res = await fetch('/api/reminders', { headers: { 'X-User-Id': uid } })
+      const list = await res.json()
+      const row = list.find((r) => r.when === 'daily')
+      return row ? (row.done === false && (row.doneOn === null || row.doneOn === undefined)) : false
+    })
+    if (!undoClean) await page.waitForTimeout(600)
+  }
+  flows.push(['daily-reset: undo leaves no stale doneOn in DB', undoClean])
   // 7d. Notification permission button exists (permission itself is not asked in CI).
   flows.push(['notify button present', await page.getByTestId('rem-notify').isVisible()])
   scans.push(['reminders', await axe(page)])
@@ -550,6 +611,22 @@ async function main() {
       && p.emergencyContact === 'Asha — 9812345678'
   })
   flows.push(['backend: profile persisted in MongoDB', profileOnServer])
+
+  // 8a-0. Phase 14 ICE emergency card: profile-driven, popup prints the
+  // critical lines (name, blood, allergies) in the active language.
+  const icePopup = page.context().waitForEvent('page', { timeout: 9000 }).catch(() => null)
+  await page.getByTestId('ice-open').click()
+  const iceWin = await icePopup
+  flows.push(['ICE card popup opens', !!iceWin])
+  if (iceWin) {
+    await iceWin.waitForLoadState('domcontentloaded').catch(() => {})
+    const iceText = await iceWin.locator('body').textContent().catch(() => '')
+    flows.push(['ICE card shows critical profile lines', iceText.includes('Rahul Kumar') && iceText.includes('B+') && iceText.toLowerCase().includes('dust')])
+    flows.push(['ICE card carries emergency contact + call', iceText.includes('9812345678')])
+    const iceCall = await iceWin.locator('a.call').getAttribute('href').catch(() => null)
+    flows.push(['ICE call button dials digits only', iceCall === 'tel:9812345678', String(iceCall)])
+    await iceWin.close().catch(() => {})
+  }
 
   // 8a. Vitals are live → BMI computes with Asian-Indian thresholds
   // (172/68 = 22.98 → "Normal"), and the Home plan now lists section-7's

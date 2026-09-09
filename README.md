@@ -45,7 +45,7 @@ npm run build && npm start
 | 👤 **Profile** | Complete health profile — name, age, gender, blood group, height, weight, conditions, allergies, medicines, emergency contact (one-tap call — and it also appears as a call button inside the emergency modal next to 112) — synced to the cloud |
 | 🧠 **Health Memory** | Consent-gated AI personalisation: turn it on and the assistant sends your profile context (age, conditions, allergies, medicines) with your question for tailored guidance. Off by default — nothing is shared until you switch it on, and turning it off stops use instantly |
 | 🔐 **Privacy Controls** | Export all your data as a JSON download, delete health history, delete account (wipes the login + every health record under it). Guest mode keeps everything device-only |
-| 📱 **PWA-ready** | Web app manifest — installable, standalone display, brand theme |
+| 📱 **PWA — works offline** | Service worker caches the app shell: install it, turn the internet off, and the app still boots — triage answers from the on-device engine, reminders render, sync resumes when back online. Manifest with PNG icons (any + maskable) — installable on Android/desktop |
 | 🌱 **Tip of the Day** | A new practical wellness tip every day from a 12-tip bilingual pool (hydration, sleep, salt sense, morning sunlight, 20-20-20 eyes…) — date-seeded, same tip all day, fresh one tomorrow, in both languages |
 | 🌐 **Full EN/HI i18n** | Every string translated, preference persisted — and switching re-renders the assistant conversation too: chat replies, results, follow-up chips and emergency cards flip live into the newly selected language |
 
@@ -93,7 +93,7 @@ scripts/dev-mongo.cjs          In-memory MongoDB for local development
 ## Verification
 
 - **axe-core 4.10.2**: 0 accessibility violations across 19 audited states (splash, login, signup, WCAG AA contrast, labelled controls, focus trap modal, accessible charts, reduced-motion support)
-- **Playwright E2E**: 131 functional + backend flows green (incl. photo-gate accept/reject, splash/auth flows, signup → app, session restore, account data partition, insights charts, print report, MongoDB persistence, history search/filter, reminder snooze/edit/notifications, profile vitals, memory consent flag in DB, privacy export/clear, account deletion end-to-end, voice controls, follow-up chips topic-send, date-seeded tip, personal emergency-contact call, Today's Plan one-tap done + DB sync, BMI Asian band, weekly digest, conversation-history request shape, intent-aware follow-up answers, duration escalation, activity streak, reminder quick templates), 0 console errors
+- **Playwright E2E**: 138 functional + backend flows green (incl. photo-gate accept/reject, splash/auth flows, signup → app, session restore, account data partition, insights charts, print report, MongoDB persistence, history search/filter, reminder snooze/edit/notifications, profile vitals, memory consent flag in DB, privacy export/clear, account deletion end-to-end, voice controls, follow-up chips topic-send, date-seeded tip, personal emergency-contact call, Today's Plan one-tap done + DB sync, BMI Asian band, weekly digest, conversation-history request shape, intent-aware follow-up answers, duration escalation, activity streak, reminder quick templates, daily reminder rollover, ICE emergency card popup), 0 console errors
 - `npm run build` passes; security headers verified live (CSP, nosniff, Referrer-Policy, Permissions-Policy)
 
 See [REPORT.md](./REPORT.md) for the full before/after analysis.

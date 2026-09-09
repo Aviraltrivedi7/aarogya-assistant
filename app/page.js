@@ -126,14 +126,12 @@ export default function App() {
 
   const onNewCheck = useCallback((item) => setHistory((prev) => [item, ...prev]), [])
   const onRemindersChange = useCallback((list) => setReminders(list), [])
-  // One-tap done/undo from the Home plan — sync layer owns the mirror push,
-  // storage returns the fresh list so every view updates together.
+  // One-tap done/undo from the Home plan — the sync layer owns the
+  // doneOn-day marker + server mirror and returns the fresh list, so the
+  // plan, the bell and the reminders section all update on the same truth
+  // (a yesterday-done daily tapped today must mark TODAY done, not undo).
   const onToggleReminder = useCallback((id) => {
-    setReminders((prev) => {
-      const next = prev.map((r) => (r.id === id ? { ...r, done: !r.done } : r))
-      sync.toggleReminder(id)
-      return next
-    })
+    setReminders(sync.toggleReminder(id))
   }, [])
   const onProfileSaved = useCallback((p) => setProfile(p), [])
   const onHistoryCleared = useCallback(() => setHistory([]), [])

@@ -121,16 +121,22 @@ const reminderSchema = z.object({
   when: z.enum(['today', 'tomorrow', 'daily']).default('today'),
   type: z.enum(['medication', 'appointment', 'exercise', 'water', 'sleep', 'followup', 'other']).default('other'),
   done: z.boolean().default(false),
+  // Local date the reminder was completed (YYYY-MM-DD) — daily reminders
+  // render pending again the next day; absent for legacy rows (done forever).
+  doneOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   createdAt: z.string().datetime().optional(),
 })
 
-// Partial update — used for toggling done, snoozing and editing in place.
+// Partial update — used for toggling done (doneOn rides along), snoozing
+// and editing in place. `doneOn: null` explicitly clears the done-for-day
+// marker (undo path), so it is a separate nullable key, not `.optional()`.
 const reminderPatchSchema = z.object({
   title: z.string().trim().min(1).max(80).optional(),
   time: z.string().regex(/^\d{2}:\d{2}$/).optional(),
   when: z.enum(['today', 'tomorrow', 'daily']).optional(),
   type: z.enum(['medication', 'appointment', 'exercise', 'water', 'sleep', 'followup', 'other']).optional(),
   done: z.boolean().optional(),
+  doneOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
 }).refine((v) => Object.keys(v).length > 0, { message: 'At least one field is required' })
 
 const profileSchema = z.object({
